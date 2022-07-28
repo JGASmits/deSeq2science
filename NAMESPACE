@@ -3,3 +3,5 @@
 export(generate_output_dir)
 export(load_s2s_counts_data)
 export(load_s2s_sample_file)
+export(plotPCA_dds)
+export(plot_dist_dds)
