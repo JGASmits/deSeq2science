@@ -5,34 +5,43 @@
 #' @param output_file name of the output (pdf) file
 #' @param annotation1 potential name of metadata1 in the dds object plotted as annotation
 #' @param annotation2 potential name of metadata2 in the dds object plotted as annotation
+#' @param costum_sample_order list of all sample names in the desired order
 #' @export
-plot_dist_dds <- function(normalized_deseq_int, output_file, annotation1 = NA, annotation2 = NA) {
+plot_dist_dds <- function(normalized_deseq_int, output_file, annotation1 = NA, annotation2 = NA, flip_tree_coordinates= NA, costum_sample_order = NA) {
  #output_file = location in which the output pdf is generated
   #annotation1 = optional annotation name, should be present as metadata to the normalized_deseq_int object
   #annotation2 = optional second annotation name, should be present as metadata to the normalized_deseq_int object
-  #library('ComplexHeatmap')
-  #library("RColorBrewer")
   sampleDists <- dist(t(SummarizedExperiment::assay(normalized_deseq_int)))
   sampleDistMatrix <- as.matrix(sampleDists)
   colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9,"Blues")) )(1000)
   
+  dend <- stats::as.dendrogram(stats::hclust(as.dist(sampleDistMatrix)))
+  #dend = dend %>% dendextend::set("labels_to_char") %>% labels
+  
+  if (typeof(costum_sample_order) == "character"){
+    print('reordering dendogram based on costum sample order list')
+    dend <- dend %>% dendextend::rotate(costum_sample_order)} #rotate to match labels new order}
+  
   if (is.na(annotation1)) {
     myplot <- 
       ComplexHeatmap::Heatmap(sampleDistMatrix,
-              row_dend_side = "right",
-              show_column_dend = FALSE,
-              col = colors)}
-  else {
-    if (is.na(annotation2)){
-      ha = ComplexHeatmap::rowAnnotation(annotation1 = normalized_deseq_int[[annotation1]])}
-    else {ha = ComplexHeatmap::rowAnnotation(annotation1 = normalized_deseq_int[[annotation1]],
-                             annotation2 = normalized_deseq_int[[annotation2]])}
-    myplot <- 
-      ComplexHeatmap::Heatmap(sampleDistMatrix,
-              row_dend_side = "right",
-              show_column_dend = FALSE,
-              col = colors,
-              right_annotation = ha )}
+                              row_dend_side = "right",
+                              show_column_dend = FALSE,
+                              cluster_rows = dend,
+                              cluster_columns = dend,
+                              col = colors)}else {
+                                if (is.na(annotation2)){
+                                  ha = ComplexHeatmap::rowAnnotation(annotation1 = normalized_deseq_int[[annotation1]])}
+                                else {ha = ComplexHeatmap::rowAnnotation(annotation1 = normalized_deseq_int[[annotation1]],
+                                                                         annotation2 = normalized_deseq_int[[annotation2]])}
+                                myplot <- 
+                                  ComplexHeatmap::Heatmap(sampleDistMatrix,
+                                                          row_dend_side = "right",
+                                                          show_column_dend = FALSE,
+                                                          col = colors,
+                                                          cluster_rows = dend,
+                                                          cluster_columns = dend,
+                                                          right_annotation = ha )}
   
   pdf(output_file,width=6,height=6,paper='special') 
   print(myplot)

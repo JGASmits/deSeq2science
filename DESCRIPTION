@@ -26,5 +26,7 @@ Imports:
 	clusterProfiler(>= 4.2.2),
 	org.Hs.eg.db(>= 3.14.0),
 	tidyr(>= 1.2.0),
-	ggplotify(>= 0.1.0)
+	ggplotify(>= 0.1.0),
+	dendextend,
+	stats
 
