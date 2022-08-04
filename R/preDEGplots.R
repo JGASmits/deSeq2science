@@ -16,11 +16,10 @@ plot_dist_dds <- function(normalized_deseq_int, output_file, annotation1 = NA, a
   colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9,"Blues")) )(1000)
   
   dend <- stats::as.dendrogram(stats::hclust(as.dist(sampleDistMatrix)))
-  #dend = dend %>% dendextend::set("labels_to_char") %>% labels
-  
+
   if (typeof(costum_sample_order) == "character"){
     print('reordering dendogram based on costum sample order list')
-    dend <- dend %>% dendextend::rotate(costum_sample_order)} #rotate to match labels new order}
+    dend <-dendextend::rotate(dend,costum_sample_order)} #rotate to match labels new order}
   
   if (is.na(annotation1)) {
     myplot <- 
