@@ -7,6 +7,12 @@
 GOenr_simplified(
   gene_list,
   output_file,
+  res,
+  dds,
+  fill_annotation = "disease",
+  x_axis_annotation = "timepoint",
+  topn_genes = 9,
+  topn_GOterms = 20,
   gene_background_list = "NA",
   qval_cutoff = 0.05,
   gene_ID = "SYMBOL",
@@ -19,11 +25,21 @@ GOenr_simplified(
 
 \item{output_file}{name of the output (pdf) file}
 
-\item{annotation1}{potential name of metadata1 in the dds object plotted as annotation}
+\item{res}{DESeq2 result of differential testing, used for selecting most significant genes from gene_list for plotting}
 
-\item{annotation2}{potential name of metadata2 in the dds object plotted as annotation}
+\item{dds}{deseq2 object, used for grabbing count data of genes of GO-term}
 
-\item{costum_sample_order}{list of all sample names in the desired order}
+\item{fill_annotation}{metadata column deseq2 object used for count plotting fill}
+
+\item{x_axis_annotation}{metadata column deseq2 object used for count seperation x-axis}
+
+\item{topn_genes}{n genes plotted per GO-term}
+
+\item{topn_GOterms}{n GO-terms plotted}
+
+\item{gene_background_list}{optional gene background}
+
+\item{simplify_value}{value wich is used to simplify go terms, smaller number mean less GO-concationation.}
 }
 \description{
 This function runs GO enrichment using clusterprofilea nd simplify on the outcome

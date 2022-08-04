@@ -2,6 +2,7 @@
 
 export("%>%")
 export(GOenr_simplified)
+export(GSEA_mysigdb)
 export(generate_output_dir)
 export(load_s2s_counts_data)
 export(load_s2s_sample_file)

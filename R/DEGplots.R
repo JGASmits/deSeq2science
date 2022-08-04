@@ -82,3 +82,47 @@ GOenr_simplified <- function(gene_list,
       dev.off()
     }
 }
+#' GSEA_mysigdb
+#'
+#' This function runs GSEA enrichment using clusterprofiler
+#' @param res deseq2 result object with gene symbols as identifier
+#' @param output_dir name of the output directory
+#' @param ncores ammount of cores to use, on multicore machines you might run into memory issues when you use to many cores.
+#' @export
+GSEA_mysigdb <- function(res,
+                         output_dir,
+                         ncores = 4){
+  GSEA_dir <- paste0(output_dir, '/GSEA')
+  dir.create(file.path(GSEA_dir), showWarnings = FALSE)
+
+  m_df <- msigdbr::msigdbr(species = "Homo sapiens")#get the mysigdb genesets
+
+  res_df <- as.data.frame(res)#make a ranked gene list
+  res_df <- tidyr::drop_na(res_df)
+  FC_list <- res_df$log2FoldChange
+  names(FC_list) <- as.character(rownames(res_df))
+  geneList <- sort(FC_list, decreasing = TRUE)
+
+  doMC::registerDoMC(ncores)
+  print('running GSEA analysis')
+  for (database in unique(m_df$gs_cat)){
+   GSEA_output_dir <- paste(GSEA_dir, database, sep='/' )
+   dir.create(file.path(GSEA_output_dir), showWarnings = FALSE)
+   msig_df <- msigdbr::msigdbr(species = "Homo sapiens", category = database) %>% dplyr::select(gs_name, gene_symbol)
+   GSEA_results <- clusterProfiler::GSEA(geneList, TERM2GENE = msig_df, pvalueCutoff = 0.1)
+   write.table(as.data.frame(GSEA_results),row.names = T, col.names= T, file= paste0(paste(GSEA_dir,database,sep = '/'),'_GSEA_res.csv'), sep = ',')
+   GSEA_df <-as.data.frame(GSEA_results)
+   GSEA_df <- GSEA_df[c('Description','enrichmentScore','qvalues')]
+   gsea_counter = 1
+   for (sigGSEA in as.data.frame(GSEA_results@result)[1]$ID){
+     if (gsea_counter > 10){break}
+     GSEA_plot <- enrichplot::gseaplot2(GSEA_results,
+                                        geneSetID = gsea_counter,
+                                        pvalue_table = T)
+     plotname <- paste0(sigGSEA, '_GSEA_enrichment.pdf')
+     pdf(paste(GSEA_output_dir,plotname, sep="/"),width=8,height=6,paper='special')
+     print(GSEA_plot)
+     gsea_counter = gsea_counter + 1
+     dev.off()}
+  }}
+
